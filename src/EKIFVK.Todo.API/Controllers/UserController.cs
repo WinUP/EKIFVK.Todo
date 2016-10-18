@@ -36,7 +36,7 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户信息<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> null<br />
+        /// 返回：200 SUCCESS -> name, usergroup, lastActiveTime, lastActiveIp, enabled[bool], description, tag<br />
         /// <list type="bullet">
         /// <item><description>Token或用户不存在：401 INVALID_NAME -> null</description></item>
         /// <item><description>权限不足：403 权限验证失败组 -> null</description></item>
@@ -384,7 +384,7 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户数量<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> count<br />
+        /// 返回：200 SUCCESS -> count[int]<br />
         /// </summary>
         /// <returns></returns>
         [HttpGet(".count")]
@@ -397,7 +397,7 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户名列表<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> count<br />
+        /// 返回：200 SUCCESS -> name[]<br />
         /// </summary>
         /// <param name="skip">跳过的数据条数</param>
         /// <param name="count">获取的数据条数</param>

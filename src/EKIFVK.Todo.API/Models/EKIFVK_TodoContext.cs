@@ -83,6 +83,8 @@ namespace EKIFVK.Todo.API.Models
 
                 entity.Property(e => e.Name).IsRequired();
 
+                entity.Property(e => e.Finished).HasDefaultValueSql("0");
+
                 entity.HasOne(d => d.OwnerNavigation)
                     .WithMany(p => p.Task)
                     .HasForeignKey(d => d.Owner)

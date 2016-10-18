@@ -12,6 +12,14 @@ namespace EKIFVK.Todo.API.Controllers
 {
     /// <summary>
     /// 用户组相关API
+    /// <list type="bullet">
+    /// <item><description>GET /{name} => GetInfo</description></item>
+    /// <item><description>POST /{name} => Add</description></item>
+    /// <item><description>DELETE /{name} => Delete</description></item>
+    /// <item><description>PATCH /{name} => RouteHttpPatch</description></item>
+    /// <item><description>GET /.count => GetGroupCount</description></item>
+    /// <item><description>GET /.list => GetGroupList</description></item>
+    /// </list>
     /// </summary>
     [Route("usergroup")]
     public class UsergroupController : UserBasedController
@@ -29,7 +37,7 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户组信息<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> null<br />
+        /// 返回：200 SUCCESS -> name, description, enabled[bool], users[int]<br />
         /// <list type="bullet">
         /// <item><description>用户组名不存在：401 INVALID_NAME -> null</description></item>
         /// </list>
@@ -55,9 +63,10 @@ namespace EKIFVK.Todo.API.Controllers
         /// 添加新的用户组<br />
         /// <br />
         /// 权限：GROUP:MANAGE<br />
-        /// 返回：200 SUCCESS -> null<br />
+        /// 返回：200 SUCCESS -> id[int]<br />
         /// <list type="bullet">
-        /// <item><description>Token不存在或用户名不合法：401 INVALID_NAME -> null</description></item>
+        /// <item><description>用户名不合法：400 INVALID_NAME -> null</description></item>
+        /// <item><description>Token不存在：401 INVALID_NAME -> null</description></item>
         /// <item><description>同名用户组已存在：409 ALREADY_EXIST -> null</description></item>
         /// <item><description>权限不足：403 权限验证失败组 -> null</description></item>
         /// </list>
@@ -87,7 +96,7 @@ namespace EKIFVK.Todo.API.Controllers
             };
             Database.SystemUsergroup.Add(group);
             Database.SaveChanges();
-            return JsonResponse();
+            return JsonResponse(data: group.Id);
         }
 
         /// <summary>
@@ -281,11 +290,11 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户组数量<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> count<br />
+        /// 返回：200 SUCCESS -> count[int]<br />
         /// </summary>
         /// <returns></returns>
         [HttpGet(".count")]
-        public JsonResult GetUserCount()
+        public JsonResult GetGroupCount()
         {
             return JsonResponse(data: Database.SystemUsergroup.Count().ToString());
         }
@@ -294,13 +303,13 @@ namespace EKIFVK.Todo.API.Controllers
         /// 获取用户组名列表<br />
         /// <br />
         /// 权限：无<br />
-        /// 返回：200 SUCCESS -> count<br />
+        /// 返回：200 SUCCESS -> name[]<br />
         /// </summary>
         /// <param name="skip">跳过的数据条数</param>
         /// <param name="count">获取的数据条数</param>
         /// <returns></returns>
         [HttpGet(".list")]
-        public JsonResult GetUserList(int skip, int count)
+        public JsonResult GetGroupList(int skip, int count)
         {
 
             return JsonResponse(data: Database.SystemUsergroup.Skip(skip).Take(count).Select(e => e.Name));

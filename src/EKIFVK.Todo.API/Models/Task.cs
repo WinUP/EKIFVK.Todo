@@ -10,6 +10,7 @@ namespace EKIFVK.Todo.API.Models
         public string Description { get; set; }
         public int Owner { get; set; }
         public DateTime? Deadline { get; set; }
+        public bool Finished { get; set; }
 
         public virtual SystemUser OwnerNavigation { get; set; }
     }

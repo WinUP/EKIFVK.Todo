@@ -12,6 +12,7 @@
         public string LOGIN_TOOCLOSE { get; set; }
         public string ALREADY_EXIST { get; set; }
         public string LOGIN_DENIED { get; set; }
+        public string INVALID_PARAM { get; set; }
         public string SERVER_ERROR { get; set; }
         public string SUCCESS { get; set; }
 

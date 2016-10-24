@@ -3,6 +3,8 @@ using EKIFVK.Todo.API.Models;
 using EKIFVK.Todo.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,6 +31,16 @@ namespace EKIFVK.Todo.API
         {
             // Add framework services.
             services.AddMvc();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            });
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAll"));
+            });
+
             services.AddOptions();
             services.Configure<SystemConfig>(Configuration.GetSection("SystemConfig"));
             services.Configure<SystemConsts>(Configuration.GetSection("SystemConsts"));

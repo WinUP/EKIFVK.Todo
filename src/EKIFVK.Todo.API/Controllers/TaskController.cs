@@ -5,12 +5,14 @@ using System.Linq;
 using EKIFVK.DeusLegem.CreationSystem.API;
 using EKIFVK.Todo.API.Models;
 using EKIFVK.Todo.API.Services;
+using EKIFVK.Todo.API.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace EKIFVK.Todo.API.Controllers
 {
+    [Route("task")]
     public class TaskController : UserBasedController
     {
         public TaskController(DatabaseContext database, IPermissionService checker, IOptions<SystemConsts> consts)
@@ -34,6 +36,7 @@ namespace EKIFVK.Todo.API.Controllers
             var user = FindUser();
             if (user == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
+            Checker.UpdateAccessTime(user);
             var task = Database.Task.FirstOrDefault(e => e.Id == id);
             if (task == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
@@ -58,32 +61,28 @@ namespace EKIFVK.Todo.API.Controllers
         /// <item><description>Token不存在：401 INVALID_NAME -> null</description></item>
         /// </list>
         /// </summary>
-        /// <param name="name">任务名（不能包含/\.）</param>
         /// <param name="parameter">
         /// 来自Body的参数<br />
         /// <list type="bullet">
+        /// <item><description>name: 任务名</description></item>
         /// <item><description>description: 任务描述</description></item>
         /// <item><description>deadline?: 任务期限</description></item>
         /// </list>
         /// </param>
         /// <returns></returns>
-        [HttpPost("{name}")]
-        public JsonResult Add(string name, [FromBody] Hashtable parameter)
+        [HttpPost()]
+        public JsonResult Add([FromBody] Hashtable parameter)
         {
-            if (string.IsNullOrEmpty(name) ||
-                name.IndexOf("/", StringComparison.Ordinal) > -1 ||
-                name.IndexOf("\\", StringComparison.Ordinal) > -1 ||
-                name.IndexOf(".", StringComparison.Ordinal) == 0)
-                return JsonResponse(StatusCodes.Status400BadRequest, Consts.Value.INVALID_NAME);
             var user = FindUser();
             if (user == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
+            Checker.UpdateAccessTime(user);
             var task = new Task
             {
-                Name = name,
+                Name = parameter["name"].ToString(),
                 Description = parameter["description"].ToString()
             };
-            if (parameter.ContainsKey("parameter"))
+            if (parameter.ContainsKey("deadline"))
                 task.Deadline = DateTime.Parse(parameter["deadline"].ToString());
             task.OwnerNavigation = user;
             task.Finished = false;
@@ -110,6 +109,7 @@ namespace EKIFVK.Todo.API.Controllers
             var user = FindUser();
             if (user == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
+            Checker.UpdateAccessTime(user);
             var task = Database.Task.FirstOrDefault(e => e.Id == id);
             if (task == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
@@ -146,6 +146,7 @@ namespace EKIFVK.Todo.API.Controllers
             var user = FindUser();
             if (user == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
+            Checker.UpdateAccessTime(user);
             var task = Database.Task.FirstOrDefault(e => e.Id == id);
             if (task == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
@@ -173,6 +174,7 @@ namespace EKIFVK.Todo.API.Controllers
                 default:
                     return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
             }
+            Database.SaveChanges();
             return JsonResponse();
         }
 
@@ -185,14 +187,16 @@ namespace EKIFVK.Todo.API.Controllers
         /// <item><description>Token不存在：401 INVALID_NAME -> null</description></item>
         /// </list>
         /// </summary>
+        /// <param name="filter">过滤器</param>
         /// <returns></returns>
         [HttpGet(".count")]
-        public JsonResult GetTaskCount()
+        public JsonResult GetTaskCount(TaskFilter filter)
         {
             var user = FindUser();
-            return user == null 
-                ? JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME)
-                : JsonResponse(data: Database.Task.Count(e => e.Owner == user.Id).ToString());
+            if (user == null)
+                return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
+            Checker.UpdateAccessTime(user);
+            return JsonResponse(data: ParseFilter(filter, user.Id).Count());
         }
 
         /// <summary>
@@ -201,29 +205,28 @@ namespace EKIFVK.Todo.API.Controllers
         /// 权限：无<br />
         /// 返回：200 SUCCESS -> name[]<br />
         /// </summary>
-        /// <param name="skip">跳过的数据条数</param>
-        /// <param name="count">获取的数据条数</param>
-        /// <param name="type">要获取的任务类型</param>
+        /// <param name="filter">过滤器</param>
         /// <returns></returns>
         [HttpGet(".list")]
-        public JsonResult GetTaskList(int skip, int count, string type)
+        public JsonResult Search(TaskFilter filter)
         {
             var user = FindUser();
             if (user == null)
                 return JsonResponse(StatusCodes.Status401Unauthorized, Consts.Value.INVALID_NAME);
-            var result = Database.Task.Where(e => e.Owner == user.Id);
-            switch (type)
-            {
-                case "unfinished":
-                    result = result.Where(e => !e.Finished);
-                    break;
-                case "finished":
-                    result = result.Where(e => e.Finished);
-                    break;
-                default:
-                    break;
-            }
-            return JsonResponse(data: result.Skip(skip).Take(count).Select(e => e.Name));
+            Checker.UpdateAccessTime(user);
+            return
+                JsonResponse(data: ParseFilter(filter, user.Id).Select(e => new {e.Id, e.Name, e.Description, e.Deadline, e.Finished}));
+        }
+
+        private IQueryable<Task> ParseFilter(TaskFilter filter, int userId)
+        {
+            var result = Database.Task.Where(e => e.Owner == userId);
+            if (filter.OnlyFinished) result = result.Where(e => e.Finished);
+            if (filter.OnlyUnfinish) result = result.Where(e => !e.Finished);
+            if (filter.OnlyScheduled) result = result.Where(e => e.Deadline.HasValue);
+            if (filter.OnlyNoSchedule) result = result.Where(e => !e.Deadline.HasValue);
+            var count = filter.Count == 0 ? int.MaxValue : filter.Count;
+            return result.OrderByDescending(e => e.Id).Skip(filter.Skip).Take(count);
         }
     }
 }

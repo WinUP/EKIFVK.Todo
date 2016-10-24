@@ -1,12 +1,12 @@
---temp-output:C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\obj\Debug\netcoreapp1.0\
---out:C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\bin\Debug\netcoreapp1.0\EKIFVK.Todo.API.dll
---define:DEBUG
+--temp-output:C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\obj\Release\netcoreapp1.0\
+--out:C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\bin\Release\netcoreapp1.0\EKIFVK.Todo.API.dll
+--define:RELEASE
 --define:TRACE
 --define:NETCOREAPP1_0
 --suppress-warning:CS1701
 --suppress-warning:CS1702
 --suppress-warning:CS1705
---optimize:False
+--optimize:True
 --emit-entry-point:True
 --output-name:EKIFVK.Todo.API
 --file-version:1.0.0.0
@@ -197,7 +197,7 @@
 --reference:C:\Users\winup\.nuget\packages\System.Threading.Timer\4.0.1\ref\netstandard1.2\System.Threading.Timer.dll
 --reference:C:\Users\winup\.nuget\packages\System.Xml.ReaderWriter\4.0.11\ref\netstandard1.3\System.Xml.ReaderWriter.dll
 --reference:C:\Users\winup\.nuget\packages\System.Xml.XDocument\4.0.11\ref\netstandard1.3\System.Xml.XDocument.dll
---resource:"C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\obj\Debug\netcoreapp1.0\EKIFVK.Todo.APIdotnet-compile.deps.json",EKIFVK.Todo.API.deps.json
+--resource:"C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\obj\Release\netcoreapp1.0\EKIFVK.Todo.APIdotnet-compile.deps.json",EKIFVK.Todo.API.deps.json
 C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\Program.cs
 C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\Startup.cs
 C:\Users\winup\documents\visual studio 2015\Projects\EKIFVK.Todo.API\src\EKIFVK.Todo.API\SystemConfig.cs
